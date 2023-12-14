@@ -26,7 +26,7 @@ Firstly, this bot has been created for my wife and her nail(beauty) business. Po
 ## 💭 How it works <a name = "working"></a>
 
 This bot like a "middleware" between a client and a master (nail artist).  
-The master first should add new slots using hidden commands. After that these slots will be available for getting appointments.
+The master first should add new slots using hidden commands. After that these slots will be available for making appointments.
 
 The bot has the ability to send messages to both master and client in an appropriate circumstances, e.g. a client chose a free slot, immediately sends a message to the master with options like accept and reject, depending on what the master chose the client receives a respond message.
 
