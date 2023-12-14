@@ -24,7 +24,7 @@ Firstly, this bot has been created for my wife and her nail(beauty) business. Po
 
 ## 🎥 Demo (eng soon) <a name = "demo"></a>
 
-![Working](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHJkd2d6YXA1eHUxeGF6M253bXcxdmI0MTg2NDhobmVvdnJ6bzVydyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QZkIffuiXmNJtEeWEn/giphy.gif)
+![Alt text](demo.gif)
 
 ## 💭 How it works <a name = "working"></a>
 
