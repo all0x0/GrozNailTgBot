@@ -12,9 +12,6 @@
 - [About](#about)
 - [Demo / Working](#demo)
 - [How it works](#working)
-- [Usage](#usage)
-- [Getting Started](#getting_started)
-- [Deploying your own bot](#deployment)
 - [Built Using](#built_using)
 - [TODO](#todo_list)
 
@@ -22,7 +19,7 @@
 
 Firstly, this bot has been created for my wife and her nail(beauty) business. Potential clients can easily get an actual price list, get free dates and hours (further in the text just slots) calendar and choose the appropriate one in a few clicks. After that you should only wait that day and that's it! There is no long correspondence in chats, useless calls, etc! Isn't that cool?
 
-## 🎥 Demo (eng soon) <a name = "demo"></a>
+## 🎥 Demo <a name = "demo"></a>
 
 ![Alt text](demo.gif)
 
@@ -35,76 +32,7 @@ The bot has the ability to send messages to both master and client in an appropr
 
 The entire bot is written in Python 3.9 and hosted on [Vercel](https://vercel.com/)!
 
-## 🎈 Usage <a name = "usage"></a>
 
-To use the bot, type:
-
-```
-!dict word
-```
-
-The first part, i.e. "!dict" **is not** case sensitive.
-
-The bot will then give you the Oxford Dictionary (or Urban Dictionary; if the word does not exist in the Oxford Dictionary) definition of the word as a comment reply.
-
-### Example:
-
-> !dict what is love
-
-**Definition:**
-
-Baby, dont hurt me~
-Dont hurt me~ no more.
-
-**Example:**
-
-Dude1: Bruh, what is love?
-Dude2: Baby, dont hurt me, dont hurt me- no more!
-Dude1: dafuq?
-
-**Source:** https://www.urbandictionary.com/define.php?term=what%20is%20love
-
----
-
-<sup>Beep boop. I am a bot. If there are any issues, contact my [Master](https://www.reddit.com/message/compose/?to=PositivePlayer1&subject=/u/Wordbook_Bot)</sup>
-
-<sup>Want to make a similar reddit bot? Check out: [GitHub](https://github.com/kylelobo/Reddit-Bot)</sup>
-
-## 🏁 Getting Started <a name = "getting_started"></a>
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them.
-
-```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running.
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo.
-
-## 🚀 Deploying your own bot <a name = "deployment"></a>
-
-To see an example project on how to deploy your bot, please see my own configuration:
-
-- **Heroku**: https://github.com/kylelobo/Reddit-Bot#deploying_the_bot
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 
@@ -115,3 +43,9 @@ To see an example project on how to deploy your bot, please see my own configura
 - [alembic](https://alembic.sqlalchemy.org/en/latest/) for migrations (I use it only locally)
 
 ## 🗒️ TODO list <a name = "todo_list"></a>
+
+- [ ] appointment rescheduling
+- [ ] update a price by sending a price image or url
+- [ ] google calendar integration (for master)
+- [ ] add in-bot instructions (first hello message)
+- [ ] new menu button for a master with an ability to send a reminder about upcoming appointments 
