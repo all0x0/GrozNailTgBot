@@ -5,16 +5,6 @@
 
 <h3 align="center">Project Title</h3>
 
-<div align="center">
-
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![Platform](https://img.shields.io/badge/platform-reddit-orange.svg)](https://www.reddit.com/user/Wordbook_Bot)
-[![GitHub Issues](https://img.shields.io/github/issues/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/pulls)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
-
-</div>
-
 ---
 
 ## 📝 Table of Contents
@@ -26,25 +16,22 @@
 - [Getting Started](#getting_started)
 - [Deploying your own bot](#deployment)
 - [Built Using](#built_using)
-- [TODO](../TODO.md)
-- [Contributing](../CONTRIBUTING.md)
-- [Authors](#authors)
-- [Acknowledgments](#acknowledgement)
+- [TODO](#todo_list)
 
 ## 🧐 About <a name = "about"></a>
 
 Firstly, this bot has been created for my wife and her nail(beauty) business. Potential clients can easily get an actual price list, get free dates and hours (further in the text just slots) calendar and choose the appropriate one in a few clicks. After that you should only wait that day and that's it! There is no long correspondence in chats, useless calls, etc! Isn't that cool?
 
-## 🎥 Demo / Working (eng soon) <a name = "demo"></a>
+## 🎥 Demo (eng soon) <a name = "demo"></a>
 
-![Working](https://media.giphy.com/media/20NLMBm0BkUOwNljwv/giphy.gif)
+![Working](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHJkd2d6YXA1eHUxeGF6M253bXcxdmI0MTg2NDhobmVvdnJ6bzVydyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QZkIffuiXmNJtEeWEn/giphy.gif)
 
 ## 💭 How it works <a name = "working"></a>
 
 This bot like a "middleware" between a client and a master (nail artist).  
-The master first should add new slots using hidden commands. After that these slots will be available for getting appointments.  
+The master first should add new slots using hidden commands. After that these slots will be available for getting appointments.
 
-The bot has the ability to send messages to both master and client in an appropriate circumstances, e.g. a client chose a free slot, immediately sends a message to the master with options like accept and reject, depending on what the master chose the client receives a respond message.  
+The bot has the ability to send messages to both master and client in an appropriate circumstances, e.g. a client chose a free slot, immediately sends a message to the master with options like accept and reject, depending on what the master chose the client receives a respond message.
 
 The entire bot is written in Python 3.9 and hosted on [Vercel](https://vercel.com/)!
 
@@ -120,18 +107,11 @@ To see an example project on how to deploy your bot, please see my own configura
 - **Heroku**: https://github.com/kylelobo/Reddit-Bot#deploying_the_bot
 
 ## ⛏️ Built Using <a name = "built_using"></a>
-The bot uses the [python-telegram-bot V13.13](https://docs.python-telegram-bot.org/en/v13.13/) to process updates through webhooks, [Flask](https://flask.palletsprojects.com/en/3.0.x/) as a web framework module, [sqlalchemy](https://www.sqlalchemy.org/), postgresql database hosted on [Supabase](https://supabase.com/), [alembic](https://alembic.sqlalchemy.org/en/latest/) for migrations (I use it only locally).
-- [PRAW](https://praw.readthedocs.io/en/latest/) - Python Reddit API Wrapper
-- [Heroku](https://www.heroku.com/) - SaaS hosting platform
 
-## ✍️ Authors <a name = "authors"></a>
+- [python-telegram-bot V13.13](https://docs.python-telegram-bot.org/en/v13.13/) - This library provides a pure Python interface for the [Telegram Bot API](https://core.telegram.org/bots/api)
+- [Flask](https://flask.palletsprojects.com/en/3.0.x/) - a web framework
+- [sqlalchemy](https://www.sqlalchemy.org/) - The Python SQL Toolkit
+- [Supabase](https://supabase.com/) - an open source Firebase alternative
+- [alembic](https://alembic.sqlalchemy.org/en/latest/) for migrations (I use it only locally)
 
-- [@kylelobo](https://github.com/kylelobo) - Idea & Initial work
-
-See also the list of [contributors](https://github.com/kylelobo/The-Documentation-Compendium/contributors) who participated in this project.
-
-## 🎉 Acknowledgements <a name = "acknowledgement"></a>
-
-- Hat tip to anyone whose code was used
-- Inspiration
-- References
+## 🗒️ TODO list <a name = "todo_list"></a>
