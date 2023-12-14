@@ -1,0 +1,20 @@
+from enum import IntEnum
+
+
+class Command(IntEnum):
+    """Enum for menu commands"""
+
+    UNDEFINED = 0
+    MAINMENU = 1
+    PRICE = 2
+    MASTER_LOCATION = 3
+    NEW_APPOINTMENT = 4
+    CURRENT_MONTH = 5
+    NEXT_MONTH = 6
+    CANCEL_APPOINTMENT = 7
+    CANCEL_APPOINTMENT_LIST = 8
+    RESCHEDULE_APPOINTMENT = 9
+    AVAILABLE_TIME = 10
+    ACCEPT_REQUEST = 11
+    REJECT_REQUEST = 12
+    RESCHEDULE_APPOINTMENT_LIST = 13
