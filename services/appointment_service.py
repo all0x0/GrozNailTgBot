@@ -279,11 +279,11 @@ def compose_answer_keyboard(chat_id: int, date_time: datetime):
         [
             InlineKeyboardButton(
                 text="Принять",
-                callback_data=f"{Command.ACCEPT_REQUEST.name}__{ru_datetime(date_time)}__{chat_id}",
+                callback_data=f"{Command.ACCEPT_REQUEST.name}__{Command.UNDEFINED.name}__{ru_datetime(date_time)}__{chat_id}",
             ),
             InlineKeyboardButton(
                 text="Отклонить",
-                callback_data=f"{Command.REJECT_REQUEST.name}__{ru_datetime(date_time)}__{chat_id}",
+                callback_data=f"{Command.REJECT_REQUEST.name}__{Command.UNDEFINED.name}__{ru_datetime(date_time)}__{chat_id}",
             ),
         ]
     ]
