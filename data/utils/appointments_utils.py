@@ -22,7 +22,7 @@ def update_reject_appointment(session: Session, appointment_id: int):
     session.commit()
 
 
-def get_user_appointments(session: Session, chat_id: int):
+def get_user_appointments_time(session: Session, chat_id: int):
     query = (
         select(Appointment.procedure_time)
         .filter(
@@ -34,6 +34,17 @@ def get_user_appointments(session: Session, chat_id: int):
             )
         )
         .order_by(Appointment.procedure_time)
+    )
+    result = session.execute(query)
+    return result.scalars().all()
+
+
+def get_user_appointments(session: Session, chat_id: int):
+    query = select(Appointment).filter(
+        and_(
+            Appointment.user_id == chat_id,
+            or_(Appointment.is_cancelled == False, Appointment.is_cancelled == None),
+        )
     )
     result = session.execute(query)
     return result.scalars().all()

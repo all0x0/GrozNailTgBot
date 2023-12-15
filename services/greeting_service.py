@@ -9,8 +9,8 @@ from data.utils.users_utils import get_user, create_user
 INSTRUCTION = "your instructions here..."
 
 
-def send_hello_message(db: Session, user_id: int, context: CallbackContext):
-    existingUser = get_user(db, user_id)
+def send_hello_message(session: Session, user_id: int, context: CallbackContext):
+    existingUser = get_user(session, user_id)
 
     if existingUser is None:
         context.bot.send_message(

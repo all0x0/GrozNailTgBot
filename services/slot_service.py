@@ -73,7 +73,7 @@ def get_hidden_commands(
         return
     context.bot.send_message(
         chat_id=user_id,
-        text="Для добавления новых слотов скопируйте и отредактируйте сообщение ниже",
+        text="Для добавления новых слотов скопируйте и отредактируйте сообщение ниже и отправьте его в чат",
     )
     context.bot.send_message(
         chat_id=user_id,
@@ -81,7 +81,7 @@ def get_hidden_commands(
     )
     context.bot.send_message(
         chat_id=user_id,
-        text="Для удаления всех слотов за указанный день скопируйте и отредактируйте сообщение ниже",
+        text="Для удаления всех слотов за указанный день скопируйте и отредактируйте сообщение ниже и отправьте его в чат",
     )
     context.bot.send_message(
         chat_id=user_id,
@@ -89,7 +89,7 @@ def get_hidden_commands(
     )
     context.bot.send_message(
         chat_id=user_id,
-        text="Для удаления определенных слотов скопируйте и отредактируйте сообщение ниже",
+        text="Для удаления определенных слотов скопируйте и отредактируйте сообщение ниже и отправьте его в чат",
     )
     context.bot.send_message(
         chat_id=user_id,

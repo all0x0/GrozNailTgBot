@@ -16,14 +16,24 @@ from sqlalchemy.orm import Session
 from extensions.command_parser import get_command
 from services.calendar_service import get_current_month, get_next_month, get_time_table
 from services.main_menu_service import show_main_menu, get_price
-from services.greeting_service import send_hello_message, request_user_name, end_of_acquaintance
-from services.slot_service import add_new_slots, remove_slots, remove_days, get_hidden_commands
+from services.greeting_service import (
+    send_hello_message,
+    request_user_name,
+    end_of_acquaintance,
+)
+from services.slot_service import (
+    add_new_slots,
+    remove_slots,
+    remove_days,
+    get_hidden_commands,
+)
 from services.appointment_service import (
     accept_request,
     cancel_appointment,
     get_booked_slots,
     new_appointment,
     reject_request,
+    reschedule_appointment,
 )
 from config.settings import TOKEN, WEBHOOK_PATH, WEBHOOK_URL
 from data.db_setup import get_session
@@ -40,7 +50,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-db: Session = None
+session: Session = None
 
 application = Updater(token=TOKEN)
 unknown_users = {}
@@ -59,38 +69,42 @@ def text_message_handler(update: Update, context: CallbackContext):
     message_id = update.message.message_id
 
     if update.message.text == "/start":
-        send_hello_message(db, chat_id, context)
-        show_main_menu(db, chat_id, message_id, context)
+        send_hello_message(session, chat_id, context)
+        show_main_menu(session, chat_id, message_id, context)
         return
 
     if "памагити" in update.message.text.lower():
-        get_hidden_commands(db, chat_id, context)
-        show_main_menu(db, chat_id, message_id, context)
+        get_hidden_commands(session, chat_id, context)
+        show_main_menu(session, chat_id, message_id, context)
         return
 
     if "new slots" in update.message.text.lower():
-        add_new_slots(db, chat_id, update.message.text, context)
-        show_main_menu(db, chat_id, message_id, context)
+        add_new_slots(session, chat_id, update.message.text, context)
+        show_main_menu(session, chat_id, message_id, context)
         return
 
     if "delete slots" in update.message.text.lower():
-        remove_slots(db, chat_id, update.message.text, context)
-        show_main_menu(db, chat_id, message_id, context)
+        remove_slots(session, chat_id, update.message.text, context)
+        show_main_menu(session, chat_id, message_id, context)
         return
 
     if "clear days" in update.message.text.lower():
-        remove_days(db, chat_id, update.message.text, context)
-        show_main_menu(db, chat_id, message_id, context)
+        remove_days(session, chat_id, update.message.text, context)
+        show_main_menu(session, chat_id, message_id, context)
         return
 
     text_to_parse = unknown_users[chat_id]
     if text_to_parse is not None:
         end_of_acquaintance(
-            db, update.message.text, update.message.from_user.name, chat_id, context
+            session,
+            update.message.text,
+            update.message.from_user.name,
+            chat_id,
+            context,
         )
         command = get_command(text_to_parse)
-        new_appointment(db, chat_id, context, command)
-        show_main_menu(db, chat_id, None, context)
+        new_appointment(session, chat_id, context, command)
+        show_main_menu(session, chat_id, None, context)
         del unknown_users[chat_id]
         return
 
@@ -115,52 +129,72 @@ def callback_query_handler(update: Update, context: CallbackContext):
         command = get_command(callback_query.data)
         if command.menu:
             if command.menu is Command.MAINMENU:
-                show_main_menu(db, chat_id, message_id, context)
+                show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.PRICE:
-                get_price(db, chat_id, message_id, context)
+                get_price(session, chat_id, message_id, context)
                 return
             if command.menu is Command.AVAILABLE_TIME:
-                get_time_table(db, chat_id, message_id, command.date_time, context)
+                get_time_table(
+                    session,
+                    chat_id,
+                    message_id,
+                    command.date_time,
+                    context,
+                    command.additional_command,
+                )
                 return
             if command.menu is Command.MASTER_LOCATION:
                 # TODO: there is no implementation at all
                 pass
             if command.menu is Command.NEW_APPOINTMENT:
-                user = get_user(db, chat_id)
+                user = get_user(session, chat_id)
                 if user is None:
                     unknown_users[chat_id] = callback_query.data
                     request_user_name(chat_id, message_id, context)
                     return
-                new_appointment(db, chat_id, context, command)
-                show_main_menu(db, chat_id, message_id, context)
+                new_appointment(session, chat_id, context, command)
+                show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.CURRENT_MONTH:
-                get_current_month(db, chat_id, message_id, context)
+                get_current_month(
+                    session, chat_id, message_id, context, command.additional_command
+                )
                 return
             if command.menu is Command.NEXT_MONTH:
-                get_next_month(db, chat_id, message_id, context)
+                get_next_month(
+                    session, chat_id, message_id, context, command.additional_command
+                )
                 return
             if command.menu is Command.CANCEL_APPOINTMENT:
-                cancel_appointment(db, chat_id, command.date_time, context)
-                show_main_menu(db, chat_id, message_id, context)
+                cancel_appointment(session, chat_id, command.date_time, context)
+                show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.CANCEL_APPOINTMENT_LIST:
-                get_booked_slots(db, chat_id, message_id, context, Command.CANCEL_APPOINTMENT)
+                get_booked_slots(
+                    session, chat_id, message_id, context, Command.CANCEL_APPOINTMENT
+                )
                 return
             if command.menu is Command.RESCHEDULE_APPOINTMENT:
-                # TODO: there is no implementation at all
-                pass
+                reschedule_appointment(session, chat_id, context, command)
+                show_main_menu(session, chat_id, message_id, context)
+                return
             if command.menu is Command.RESCHEDULE_APPOINTMENT_LIST:
-                get_booked_slots(db, chat_id, message_id, context, Command.RESCHEDULE_APPOINTMENT)
+                get_booked_slots(
+                    session,
+                    chat_id,
+                    message_id,
+                    context,
+                    Command.RESCHEDULE_APPOINTMENT,
+                )
                 return
             if command.menu is Command.ACCEPT_REQUEST:
-                accept_request(db, chat_id, message_id, command, context)
-                show_main_menu(db, chat_id, None, context)
+                accept_request(session, chat_id, message_id, command, context)
+                show_main_menu(session, chat_id, None, context)
                 return
             if command.menu is Command.REJECT_REQUEST:
-                reject_request(db, chat_id, message_id, command, context)
-                show_main_menu(db, chat_id, None, context)
+                reject_request(session, chat_id, message_id, command, context)
+                show_main_menu(session, chat_id, None, context)
                 return
             if command.menu is Command.UNDEFINED:
                 pass
@@ -179,8 +213,8 @@ def bot_webhook():
         telegram_update = filters.Update.de_json(data, application.bot)
 
         if telegram_update is not None:
-            global db
-            db = get_session()  # TODO: move it to necessary functions into services???
+            global session
+            session = get_session()
 
             application.dispatcher.add_handler(
                 MessageHandler(Filters.text, text_message_handler)
