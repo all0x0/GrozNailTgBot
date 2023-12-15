@@ -28,6 +28,7 @@ For clients:
 - [x] Make an appointment
 - [x] Register new clients through the making their first appointments
 - [x] Cancel the appointment
+- [x] Reschedule the appointment
 - [x] Send notifications to master about new appointments and its cancellations
 
 For masters, as for clients, plus:
@@ -64,7 +65,6 @@ The entire bot is written in Python 3.9 and hosted on [Vercel](https://vercel.co
 
 ## 🗒️ TODO list <a name = "todo_list"></a>
 
-- [ ] appointment rescheduling
 - [ ] update a price by sending a price image or url
 - [ ] google calendar integration (for master)
 - [ ] add in-bot instructions (first hello message)
