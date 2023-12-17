@@ -6,22 +6,16 @@ from enums.role import Role
 from data.models.user import User
 from data.utils.users_utils import get_user, create_user
 
-INSTRUCTION = "your instructions here..."
-
 
 def send_hello_message(session: Session, user_id: int, context: CallbackContext):
     existingUser = get_user(session, user_id)
 
     if existingUser is None:
-        context.bot.send_message(
-            chat_id=user_id, text=f"Добро пожаловать!"#\n{INSTRUCTION}"
-        )
+        context.bot.send_message(chat_id=user_id, text=f"Добро пожаловать!")
         return
 
     context.bot.send_message(
-        chat_id=user_id,
-        text=f"С возвращением {existingUser.name}!\n"
-        #+ f"На всякий случай, инструкция:\n{INSTRUCTION}",
+        chat_id=user_id, text=f"С возвращением {existingUser.name}!\n"
     )
 
 
