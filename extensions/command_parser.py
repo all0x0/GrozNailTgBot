@@ -9,7 +9,7 @@ def get_command(text_to_parse: str):
     menu_command: Command = None
     additional_command: Command = None
     date_time: datetime = None
-    user_id: int = None
+    entity_id: int = None
 
     if text_parts:
         if text_parts[0].upper() in Command.__members__:
@@ -20,10 +20,10 @@ def get_command(text_to_parse: str):
             date_time = try_parse_datetime(text_parts[2])
         if len(text_parts) > 3:
             try:
-                user_id = int(text_parts[3])
+                entity_id = int(text_parts[3])
             except ValueError:
                 pass
-    return ComplexCommand(menu_command, additional_command, date_time, user_id)
+    return ComplexCommand(menu_command, additional_command, date_time, entity_id)
 
 
 class ComplexCommand:
@@ -32,9 +32,9 @@ class ComplexCommand:
         menu: Command,
         additional_command: Command,
         date_time: datetime,
-        user_id: int,
+        entity_id: int,
     ):
         self.menu = menu
         self.additional_command = additional_command
         self.date_time = date_time
-        self.user_id = user_id
+        self.entity_id = entity_id

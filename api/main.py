@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from extensions.command_parser import get_command
 from services.calendar_service import get_current_month, get_next_month, get_time_table
-from services.main_menu_service import show_main_menu, get_price
+from services.main_menu_service import show_main_menu, get_price, show_master_menu
 from services.greeting_service import (
     send_hello_message,
     request_user_name,
@@ -34,6 +34,9 @@ from services.appointment_service import (
     new_appointment,
     reject_request,
     reschedule_appointment,
+    master_reschedule_appointment,
+    show_coming_appointments,
+    send_notification,
 )
 from config.settings import TOKEN, WEBHOOK_PATH, WEBHOOK_URL
 from data.db_setup import get_session
@@ -103,7 +106,7 @@ def text_message_handler(update: Update, context: CallbackContext):
             context,
         )
         command = get_command(text_to_parse)
-        new_appointment(session, chat_id, context, command)
+        new_appointment(session, update.message.text, chat_id, context, command)
         show_main_menu(session, chat_id, None, context)
         del unknown_users[chat_id]
         return
@@ -142,32 +145,40 @@ def callback_query_handler(update: Update, context: CallbackContext):
                     command.date_time,
                     context,
                     command.additional_command,
+                    command.entity_id,
                 )
                 return
-            if command.menu is Command.MASTER_LOCATION:
-                # TODO: there is no implementation at all
-                pass
             if command.menu is Command.NEW_APPOINTMENT:
                 user = get_user(session, chat_id)
                 if user is None:
                     unknown_users[chat_id] = callback_query.data
                     request_user_name(chat_id, message_id, context)
                     return
-                new_appointment(session, chat_id, context, command)
+                new_appointment(session, user.name, chat_id, context, command)
                 show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.CURRENT_MONTH:
                 get_current_month(
-                    session, chat_id, message_id, context, command.additional_command
+                    session,
+                    chat_id,
+                    message_id,
+                    context,
+                    command.additional_command,
+                    command.entity_id,
                 )
                 return
             if command.menu is Command.NEXT_MONTH:
                 get_next_month(
-                    session, chat_id, message_id, context, command.additional_command
+                    session,
+                    chat_id,
+                    message_id,
+                    context,
+                    command.additional_command,
+                    command.entity_id,
                 )
                 return
             if command.menu is Command.CANCEL_APPOINTMENT:
-                cancel_appointment(session, chat_id, command.date_time, context)
+                cancel_appointment(session, chat_id, context)
                 show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.CANCEL_APPOINTMENT_LIST:
@@ -193,8 +204,30 @@ def callback_query_handler(update: Update, context: CallbackContext):
                 show_main_menu(session, chat_id, None, context)
                 return
             if command.menu is Command.REJECT_REQUEST:
-                reject_request(session, chat_id, message_id, command, context)
+                reject_request(
+                    session, chat_id, message_id, command, context, is_master=False
+                )
                 show_main_menu(session, chat_id, None, context)
+                return
+            if command.menu is Command.COMING_APPOINTMENTS:
+                show_coming_appointments(session, chat_id, message_id, context)
+                return
+            if command.menu is Command.MASTER_MENU:
+                show_master_menu(chat_id, message_id, command, context)
+                return
+            if command.menu is Command.SEND_NOTIFICATION:
+                send_notification(command.entity_id, command.date_time, context)
+                show_main_menu(session, chat_id, message_id, context)
+                return
+            if command.menu is Command.MASTER_CANCEL:
+                reject_request(
+                    session, chat_id, message_id, command, context, is_master=True
+                )
+                show_main_menu(session, chat_id, None, context)
+                return
+            if command.menu is Command.MASTER_RESCHEDULE:
+                master_reschedule_appointment(session, chat_id, context, command)
+                show_main_menu(session, chat_id, message_id, context)
                 return
             if command.menu is Command.UNDEFINED:
                 pass

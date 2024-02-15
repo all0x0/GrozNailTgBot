@@ -27,10 +27,11 @@ def get_current_month(
     message_id: int,
     context: CallbackContext,
     command: Command,
+    user_id: int,
 ):
     available_days = get_available_days(session, current_month)
     reply_markup = compose_calendar_keyboard_markup(
-        current_month, available_days, command
+        current_month, available_days, command, user_id
     )
     context.bot.send_message(
         chat_id=chat_id, text="Выберите дату и время:", reply_markup=reply_markup
@@ -45,16 +46,22 @@ def get_next_month(
     message_id: int,
     context: CallbackContext,
     command: Command,
+    user_id: int,
 ):
     available_days = get_available_days(session, next_month)
-    reply_markup = compose_calendar_keyboard_markup(next_month, available_days, command)
+    reply_markup = compose_calendar_keyboard_markup(
+        next_month, available_days, command, user_id
+    )
     context.bot.edit_message_reply_markup(
         chat_id=chat_id, message_id=message_id, reply_markup=reply_markup
     )
 
 
 def compose_calendar_keyboard_markup(
-    calendar_date: datetime, free_slot_days: list[datetime], command: Command
+    calendar_date: datetime,
+    free_slot_days: list[datetime],
+    command: Command,
+    user_id: int,
 ):
     # Add header row with month and year
     calendar_keyboard: list[list[InlineKeyboardButton]] = [
@@ -66,7 +73,7 @@ def compose_calendar_keyboard_markup(
         [
             InlineKeyboardButton(
                 text="◀️",
-                callback_data=f"{Command.CURRENT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}",
+                callback_data=f"{Command.CURRENT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}__dt__{user_id}",
             ),
             InlineKeyboardButton(
                 text=represent_date_only(calendar_date),
@@ -74,7 +81,7 @@ def compose_calendar_keyboard_markup(
             ),
             InlineKeyboardButton(
                 text="▶️",
-                callback_data=f"{Command.NEXT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}",
+                callback_data=f"{Command.NEXT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}__dt__{user_id}",
             ),
         ],
     ]
@@ -101,7 +108,7 @@ def compose_calendar_keyboard_markup(
             days_row.append(
                 InlineKeyboardButton(
                     text=f"{i}",
-                    callback_data=f"{Command.AVAILABLE_TIME.name}__{command.name if command else Command.UNDEFINED.name}__{formatted_date}",
+                    callback_data=f"{Command.AVAILABLE_TIME.name}__{command.name if command else Command.UNDEFINED.name}__{formatted_date}__{user_id}",
                 )
             )
         else:
@@ -147,20 +154,28 @@ def get_time_table(
     slot_day: datetime,
     context: CallbackContext,
     command: Command,
+    user_id: int,
 ):
     if slot_day:
-        time_keyboard_markup = compose_time_keyboard(slot_day, session, command)
+        time_keyboard_markup = compose_time_keyboard(
+            slot_day, session, command, user_id
+        )
         context.bot.edit_message_reply_markup(
             chat_id=chat_id, message_id=message_id, reply_markup=time_keyboard_markup
         )
 
 
-def compose_time_keyboard(slot_day: datetime, session: Session, command: Command) -> InlineKeyboardMarkup:
+def compose_time_keyboard(
+    slot_day: datetime,
+    session: Session,
+    command: Command,
+    user_id: int,
+) -> InlineKeyboardMarkup:
     time_table: list[list[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(
                 text="Назад",
-                callback_data=f"{Command.CURRENT_MONTH.name if slot_day.month == datetime.now().month else Command.NEXT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}",
+                callback_data=f"{Command.CURRENT_MONTH.name if slot_day.month == datetime.now().month else Command.NEXT_MONTH.name}__{command.name if command else Command.UNDEFINED.name}__dt__{user_id}",
             )
         ]
     ]
@@ -173,7 +188,7 @@ def compose_time_keyboard(slot_day: datetime, session: Session, command: Command
             [
                 InlineKeyboardButton(
                     text=ru_time(slot.date_time_slot),
-                    callback_data=f"{command.name if command == Command.RESCHEDULE_APPOINTMENT else Command.NEW_APPOINTMENT.name}__{Command.UNDEFINED.name}__{ru_datetime(slot.date_time_slot)}__{slot.master_id}",
+                    callback_data=f"{command.name if command in (Command.RESCHEDULE_APPOINTMENT, Command.MASTER_RESCHEDULE) else Command.NEW_APPOINTMENT.name}__{Command.UNDEFINED.name}__{ru_datetime(slot.date_time_slot)}__{user_id if command == Command.MASTER_RESCHEDULE else slot.master_id}",
                 )
             ]
         )

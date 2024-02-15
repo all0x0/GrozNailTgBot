@@ -9,9 +9,10 @@ from data.utils.slots_utils import add_slot, get_free_slot, delete_slot
 from data.utils.appointments_utils import (
     create_appointment,
     get_appointment,
-    get_user_appointments,
     update_reject_appointment,
     get_user_appointments_time,
+    check_appointments_for_master,
+    update_appointment,
 )
 from data.models.appointment import Appointment
 
@@ -27,6 +28,7 @@ from config.settings import ADDRESS_PHOTO_URL, ADDRESS_URL
 
 def new_appointment(
     session: Session,
+    username: str,
     chat_id: int,
     context: CallbackContext,
     command: ComplexCommand,
@@ -40,7 +42,7 @@ def new_appointment(
         )
         return
 
-    slot = get_free_slot(session, command.user_id, command.date_time)
+    slot = get_free_slot(session, command.entity_id, command.date_time)
     if slot is None:
         context.bot.send_message(
             chat_id=chat_id,
@@ -49,19 +51,20 @@ def new_appointment(
         return
 
     appointment = Appointment(
-        master_id=command.user_id,
+        master_id=command.entity_id,
         procedure_time=command.date_time,
+        user_name=username,
         user_id=chat_id,
         is_cancelled=False,
     )
     create_appointment(session, appointment)
-    delete_slot(session, command.user_id, command.date_time)
+    delete_slot(session, command.entity_id, command.date_time)
     user = get_user(session, chat_id)
 
     # message to master
     markup_keyboard = compose_answer_keyboard(chat_id, command.date_time)
     context.bot.send_message(
-        chat_id=command.user_id,
+        chat_id=command.entity_id,
         text=f"К вам хочет записаться {user.name} на <b><i>{represent_datetime(command.date_time)}</i></b>.",
         reply_markup=markup_keyboard,
         parse_mode=constants.PARSEMODE_HTML,
@@ -76,9 +79,11 @@ def new_appointment(
 
 
 def cancel_appointment(
-    session: Session, chat_id: int, procedure_time: datetime, context: CallbackContext
+    session: Session,
+    chat_id: int,
+    context: CallbackContext,
 ):
-    appointment = get_appointment(session, chat_id, procedure_time)
+    appointment = get_appointment(session, chat_id)
     update_reject_appointment(session, appointment.id)
     add_slot(session, appointment.master_id, appointment.procedure_time)
 
@@ -101,13 +106,10 @@ def cancel_appointment(
 def reschedule_appointment(
     session: Session, chat_id: int, context: CallbackContext, command: ComplexCommand
 ):
-    user_appointments = get_user_appointments(session, chat_id)
-    if user_appointments:
-        for appointment in user_appointments:
-            update_reject_appointment(session, appointment.id)
-            add_slot(session, appointment.master_id, appointment.procedure_time)
+    appointment = get_appointment(session, chat_id)
+    if appointment:
 
-        slot = get_free_slot(session, command.user_id, command.date_time)
+        slot = get_free_slot(session, command.entity_id, command.date_time)
         if slot is None:
             context.bot.send_message(
                 chat_id=chat_id,
@@ -115,21 +117,16 @@ def reschedule_appointment(
             )
             return
 
-        appointment = Appointment(
-            master_id=command.user_id,
-            procedure_time=command.date_time,
-            user_id=chat_id,
-            is_cancelled=False,
-        )
-        create_appointment(session, appointment)
-        delete_slot(session, command.user_id, command.date_time)
+        add_slot(session, appointment.master_id, appointment.procedure_time)
+        old_time = appointment.procedure_time
+        update_appointment(session, appointment.id, procedure_time=command.date_time)
+        delete_slot(session, command.entity_id, command.date_time)
 
-        user = get_user(session, chat_id)
         # message to master
         markup_keyboard = compose_answer_keyboard(chat_id, command.date_time)
         context.bot.send_message(
-            chat_id=command.user_id,
-            text=f"{user.name} хочет перенести свою запись с <b><i>{represent_datetime(user_appointments[0].procedure_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.",
+            chat_id=command.entity_id,
+            text=f"{appointment.user_name} хочет перенести свою запись с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.",
             reply_markup=markup_keyboard,
             parse_mode=constants.PARSEMODE_HTML,
         )
@@ -137,7 +134,41 @@ def reschedule_appointment(
         # message to user
         context.bot.send_message(
             chat_id=chat_id,
-            text=f"Ваш запрос на перенос записи с <b><i>{represent_datetime(user_appointments[0].procedure_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b> успешно отправлен мастеру.\r\nОжидайте ответа от бота.",
+            text=f"Ваш запрос на перенос записи с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b> успешно отправлен мастеру.\r\nОжидайте ответа от бота.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
+
+
+def master_reschedule_appointment(
+    session: Session, chat_id: int, context: CallbackContext, command: ComplexCommand
+):
+    appointment = get_appointment(session, command.entity_id)
+    if appointment:
+
+        slot = get_free_slot(session, chat_id, command.date_time)
+        if slot is None:
+            context.bot.send_message(
+                chat_id=chat_id,
+                text="Упс, кажется кто-то опередил вас и занял это время, попробуйте выбрать другое время.",
+            )
+            return
+
+        add_slot(session, appointment.master_id, appointment.procedure_time)
+        old_time = appointment.procedure_time
+        update_appointment(session, appointment.id, procedure_time=command.date_time)
+        delete_slot(session, chat_id, command.date_time)
+
+        # message to master
+        context.bot.send_message(
+            chat_id=chat_id,
+            text=f"Запись пользователя {appointment.user_name} перенесена с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
+
+        # message to user
+        context.bot.send_message(
+            chat_id=command.entity_id,
+            text=f"Мастер перенес вашу запись с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.\r\nОжидайте ответа от бота.",
             parse_mode=constants.PARSEMODE_HTML,
         )
 
@@ -148,9 +179,10 @@ def reject_request(
     message_id: int,
     command: ComplexCommand,
     context: CallbackContext,
+    is_master: bool,
 ):
-    user = get_user(session, command.user_id)
-    appointment = get_appointment(session, command.user_id, command.date_time)
+    user = get_user(session, command.entity_id)
+    appointment = get_appointment(session, command.entity_id)
     if appointment is None:
         # message to master
         context.bot.edit_message_text(
@@ -168,19 +200,19 @@ def reject_request(
     context.bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
-        text=f"Вы отклонили запрос на запись от {user.name} на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.",
+        text=f"Вы {'отменили' if is_master else 'отклонили запрос на'} запись от {user.name} на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.",
         parse_mode=constants.PARSEMODE_HTML,
     )
 
     # message to user
     master = get_user(session, chat_id)
     context.bot.send_message(
-        chat_id=command.user_id,
-        text=f"Мастер отклонил вашу запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.\r\n"
+        chat_id=command.entity_id,
+        text=f"Мастер {'отменил' if is_master else 'отклонил'} вашу запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.\r\n"
         + f"Попробуйте выбрать другое свободное окно или свяжитесь с мастером просто кликнув по нику -> {master.telegram}.",
         parse_mode=constants.PARSEMODE_HTML,
     )
-    show_main_menu(session, command.user_id, None, context)
+    show_main_menu(session, command.entity_id, None, context)
 
 
 def accept_request(
@@ -190,8 +222,8 @@ def accept_request(
     command: ComplexCommand,
     context: CallbackContext,
 ):
-    user = get_user(session, command.user_id)
-    appointment = get_appointment(session, command.user_id, command.date_time)
+    user = get_user(session, command.entity_id)
+    appointment = get_appointment(session, command.entity_id)
     if appointment is None:
         # message to master
         context.bot.edit_message_text(
@@ -204,14 +236,14 @@ def accept_request(
 
     # message to user
     context.bot.send_message(
-        chat_id=command.user_id,
+        chat_id=command.entity_id,
         text=f"Мастер подтвердил вашу запись на <b><i>{represent_datetime(command.date_time)}</i></b>.\r\n"
         + "За день до процедуры бот пришлет вам напоминание.",
         parse_mode=constants.PARSEMODE_HTML,
     )
 
     context.bot.send_photo(
-        chat_id=command.user_id,
+        chat_id=command.entity_id,
         photo=ADDRESS_PHOTO_URL,
         caption=f"""
 Адрес: {ADDRESS_URL}
@@ -289,3 +321,35 @@ def compose_answer_keyboard(chat_id: int, date_time: datetime):
     ]
 
     return InlineKeyboardMarkup(keyboard)
+
+
+def show_coming_appointments(
+    session: Session, chat_id: int, message_id: int, context: CallbackContext
+):
+    keyboard = [
+        [InlineKeyboardButton(text="Назад", callback_data=Command.MAINMENU.name)]
+    ]
+    appointments = check_appointments_for_master(session=session, master_id=chat_id)
+
+    for appointment in appointments:
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    text=f"{appointment.user_name} на {ru_datetime(appointment.procedure_time)}",
+                    callback_data=f"{Command.MASTER_MENU.name}__{Command.UNDEFINED.name}__{ru_datetime(appointment.procedure_time)}__{appointment.user_id}",
+                )
+            ]
+        )
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.edit_message_reply_markup(
+        chat_id=chat_id, message_id=message_id, reply_markup=reply_markup
+    )
+
+
+def send_notification(user_id: int, date_time: datetime, context: CallbackContext):
+    context.bot.send_message(
+        chat_id=user_id,
+        text=f"Здравствуйте! Напоминаем о вашей записи на <b><i>{represent_datetime(date_time)}</i></b>.\r\n",
+        parse_mode=constants.PARSEMODE_HTML,
+    )

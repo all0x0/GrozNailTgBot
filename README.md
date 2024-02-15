@@ -59,16 +59,14 @@ The entire bot is written in Python 3.9 and hosted on [Vercel](https://vercel.co
 - [python-telegram-bot V13.13](https://docs.python-telegram-bot.org/en/v13.13/) - This library provides a pure Python interface for the [Telegram Bot API](https://core.telegram.org/bots/api)
 - [Flask](https://flask.palletsprojects.com/en/3.0.x/) - a web framework
 - [sqlalchemy](https://www.sqlalchemy.org/) - The Python SQL Toolkit
-- [Supabase](https://supabase.com/) - an open source Firebase alternative
-- [alembic](https://alembic.sqlalchemy.org/en/latest/) for migrations (I use it only locally)
+- [alembic](https://alembic.sqlalchemy.org/en/latest/) - migrations (I use it only locally)
 
 
 ## 🗒️ TODO list <a name = "todo_list"></a>
 
 - [ ] update a price by sending a price image or url
 - [ ] google calendar integration (for master)
-- [ ] add in-bot instructions (first hello message)
-- [ ] new menu button for a master with an ability to send a reminder about upcoming appointments
+- [x] new menu button for a master with an ability to send a reminder about upcoming appointments
 - [ ] loyalty program
 - [ ] administration menu or commands
 - [ ] registration new masters through the administration menu or commands

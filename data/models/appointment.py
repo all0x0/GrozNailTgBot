@@ -6,6 +6,7 @@ from sqlalchemy import (
     DECIMAL,
     BigInteger,
     Enum,
+    String,
 )
 
 from data.mixins import Timestamp
@@ -19,6 +20,7 @@ class Appointment(Timestamp, Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     master_id = Column(BigInteger)
     user_id = Column(BigInteger)
+    user_name = Column(String(150))
     package_type = Column(Enum(Package), default=Package.UNDEFINED)
     procedure_time = Column(DateTime)
     is_confirmed = Column(Boolean, nullable=True, default=None)

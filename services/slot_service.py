@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from data.utils.users_utils import get_user
 from data.utils.slots_utils import add_slots, delete_slots, clear_days
 from enums.role import Role
-from extensions.datetime_extensions import try_parse_dates
+from extensions.datetime_extensions import try_parse_dates, ru_date, ru_datetime
+from datetime import datetime, timedelta
 
 
 def add_new_slots(
@@ -71,13 +72,15 @@ def get_hidden_commands(
     existingUser = get_user(session, user_id)
     if existingUser is None or existingUser.role == Role.USER:
         return
+    
+    dt = datetime.today().replace(minute=0) + timedelta(days=1)
     context.bot.send_message(
         chat_id=user_id,
         text="Для добавления новых слотов скопируйте и отредактируйте сообщение ниже и отправьте его в чат",
     )
     context.bot.send_message(
         chat_id=user_id,
-        text="New slots\r\n2023-11-17 10:00\r\n2023-11-20 17:00",
+        text=f"New slots\r\n{ru_datetime(dt)}\r\n{ru_datetime(dt + timedelta(days=1))}",
     )
     context.bot.send_message(
         chat_id=user_id,
@@ -85,7 +88,7 @@ def get_hidden_commands(
     )
     context.bot.send_message(
         chat_id=user_id,
-        text="Clear days\r\n2023-11-17\r\n2023-11-20",
+        text=f"Clear days\r\n{ru_date(dt)}\r\n{ru_date(dt + timedelta(days=1))}",
     )
     context.bot.send_message(
         chat_id=user_id,
@@ -93,5 +96,5 @@ def get_hidden_commands(
     )
     context.bot.send_message(
         chat_id=user_id,
-        text="Delete slots\r\n2023-11-17 10:00\r\n2023-11-20 17:00",
+        text=f"Delete slots\r\n{ru_datetime(dt)}\r\n{ru_datetime(dt + timedelta(days=1))}",
     )
