@@ -9,7 +9,6 @@ from data.utils.slots_utils import add_slot, get_free_slot, delete_slot
 from data.utils.appointments_utils import (
     create_appointment,
     get_appointment,
-    update_reject_appointment,
     get_user_appointments_time,
     check_appointments_for_master,
     update_appointment,
@@ -84,23 +83,26 @@ def cancel_appointment(
     context: CallbackContext,
 ):
     appointment = get_appointment(session, chat_id)
-    update_reject_appointment(session, appointment.id)
-    add_slot(session, appointment.master_id, appointment.procedure_time)
+    if appointment:
+        update_appointment(
+            session, appointment.id, is_cancelled=True, is_provided=False
+        )
+        add_slot(session, appointment.master_id, appointment.procedure_time)
 
-    # message to user
-    context.bot.send_message(
-        chat_id=chat_id,
-        text=f"Запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b> отменена.",
-        parse_mode=constants.PARSEMODE_HTML,
-    )
+        # message to user
+        context.bot.send_message(
+            chat_id=chat_id,
+            text=f"Запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b> отменена.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
 
-    # message to master
-    user = get_user(session, chat_id)
-    context.bot.send_message(
-        chat_id=appointment.master_id,
-        text=f"{user.name} отменил запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.",
-        parse_mode=constants.PARSEMODE_HTML,
-    )
+        # message to master
+        user = get_user(session, chat_id)
+        context.bot.send_message(
+            chat_id=appointment.master_id,
+            text=f"{user.name} отменил запись на <b><i>{represent_datetime(appointment.procedure_time)}</i></b>.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
 
 
 def reschedule_appointment(
@@ -108,7 +110,6 @@ def reschedule_appointment(
 ):
     appointment = get_appointment(session, chat_id)
     if appointment:
-
         slot = get_free_slot(session, command.entity_id, command.date_time)
         if slot is None:
             context.bot.send_message(
@@ -144,7 +145,6 @@ def master_reschedule_appointment(
 ):
     appointment = get_appointment(session, command.entity_id)
     if appointment:
-
         slot = get_free_slot(session, chat_id, command.date_time)
         if slot is None:
             context.bot.send_message(
@@ -193,7 +193,7 @@ def reject_request(
         )
         return
 
-    update_reject_appointment(session, appointment.id)
+    update_appointment(session, appointment.id, is_cancelled=True, is_provided=False)
     add_slot(session, appointment.master_id, appointment.procedure_time)
 
     # message to master
@@ -348,8 +348,85 @@ def show_coming_appointments(
 
 
 def send_notification(user_id: int, date_time: datetime, context: CallbackContext):
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="Подтвердить",
+                    callback_data=Command.CONFIRM_REMINDER.name,
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Отклонить",
+                    callback_data=Command.DECLINE_REMINDER.name,
+                )
+            ],
+        ]
+    )
+
     context.bot.send_message(
         chat_id=user_id,
-        text=f"Здравствуйте! Напоминаем о вашей записи на <b><i>{represent_datetime(date_time)}</i></b>.\r\n",
+        text=f"Здравствуйте! Напоминаю что вы записаны на маникюр <b><i>{represent_datetime(date_time)}</i></b>.\r\nПодтвердите пожалуйста запись.",
+        reply_markup=reply_markup,
         parse_mode=constants.PARSEMODE_HTML,
     )
+
+
+def confirm_reminder(
+    session: Session,
+    user_id: int,
+    message_id: int,
+    context: CallbackContext,
+):
+    appointment = get_appointment(session, user_id)
+    if appointment:
+        update_appointment(session, appointment.id, is_confirmed=True)
+
+        # message to user
+        if message_id:
+            context.bot.delete_message(chat_id=user_id, message_id=message_id)
+
+        context.bot.send_message(chat_id=user_id, text="Отлично, ждем вас!")
+
+        # message to master
+        context.bot.send_message(
+            chat_id=appointment.master_id,
+            text=f"Запись <b><i>{represent_datetime(appointment.procedure_time)}</i></b> подтверждена.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
+
+
+def decline_reminder(
+    session: Session,
+    user_id: int,
+    message_id: int,
+    context: CallbackContext,
+):
+    appointment = get_appointment(session, user_id)
+    if appointment:
+        update_appointment(
+            session,
+            appointment.id,
+            is_confirmed=False,
+            is_cancelled=True,
+            is_provided=False,
+        )
+        add_slot(session, appointment.master_id, appointment.procedure_time)
+
+        # message to user
+        if message_id:
+            context.bot.delete_message(chat_id=user_id, message_id=message_id)
+
+        context.bot.send_message(
+            chat_id=user_id,
+            text="Понимаем вашу занятость, надеемся на встречу в будущем.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )
+
+        # message to master
+        context.bot.send_message(
+            chat_id=appointment.master_id,
+            text=f"Запись <b><i>{represent_datetime(appointment.procedure_time)}</i></b> отклонена.",
+            parse_mode=constants.PARSEMODE_HTML,
+        )

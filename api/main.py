@@ -37,6 +37,8 @@ from services.appointment_service import (
     master_reschedule_appointment,
     show_coming_appointments,
     send_notification,
+    confirm_reminder,
+    decline_reminder,
 )
 from config.settings import TOKEN, WEBHOOK_PATH, WEBHOOK_URL
 from data.db_setup import get_session
@@ -228,6 +230,12 @@ def callback_query_handler(update: Update, context: CallbackContext):
             if command.menu is Command.MASTER_RESCHEDULE:
                 master_reschedule_appointment(session, chat_id, context, command)
                 show_main_menu(session, chat_id, message_id, context)
+                return
+            if command.menu is Command.CONFIRM_REMINDER:
+                confirm_reminder(session, chat_id, message_id, context)
+                return
+            if command.menu is Command.DECLINE_REMINDER:
+                decline_reminder(session, chat_id, message_id, context)
                 return
             if command.menu is Command.UNDEFINED:
                 pass

@@ -22,16 +22,6 @@ def update_appointment(session: Session, appointment_id: int, **kwargs):
     session.commit()
 
 
-def update_reject_appointment(session: Session, appointment_id: int):
-    query = (
-        update(Appointment)
-        .where(Appointment.id == appointment_id)
-        .values(is_cancelled=True, is_provided=False)
-    )
-    session.execute(query)
-    session.commit()
-
-
 def get_user_appointments_time(session: Session, chat_id: int):
     query = (
         select(Appointment.procedure_time)
