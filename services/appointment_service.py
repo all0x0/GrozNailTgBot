@@ -168,7 +168,7 @@ def master_reschedule_appointment(
         # message to user
         context.bot.send_message(
             chat_id=command.entity_id,
-            text=f"Мастер перенес вашу запись с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.\r\nОжидайте ответа от бота.",
+            text=f"Мастер перенес вашу запись с <b><i>{represent_datetime(old_time)}</i></b> на <b><i>{represent_datetime(command.date_time)}</i></b>.",
             parse_mode=constants.PARSEMODE_HTML,
         )
 
