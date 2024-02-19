@@ -64,7 +64,7 @@ def new_appointment(
     markup_keyboard = compose_answer_keyboard(chat_id, command.date_time)
     context.bot.send_message(
         chat_id=command.entity_id,
-        text=f"К вам хочет записаться {user.name} на <b><i>{represent_datetime(command.date_time)}</i></b>.",
+        text=f"К вам хочет записаться {user.name} ({user.telegram}) на <b><i>{represent_datetime(command.date_time)}</i></b>.",
         reply_markup=markup_keyboard,
         parse_mode=constants.PARSEMODE_HTML,
     )
