@@ -1,6 +1,6 @@
 import os
 
-TOKEN = os.environ.get("TOKEN", "6766269713:AAHEKFJYapvo7UZfcP8XZ0we204YPwif_Sw")
+TOKEN = os.environ.get("TOKEN", "6898513530:AAFswy2dAPpnNSuVfr1Zm3MA7XcjHktIc68")
 URL = os.environ.get("URL", "https://8159-88-241-48-94.ngrok-free.app")
 WEBHOOK_PATH = f"/bot/{TOKEN.split(':')[1]}"
 WEBHOOK_URL = f"{URL}{WEBHOOK_PATH}"
